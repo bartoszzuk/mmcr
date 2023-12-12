@@ -84,7 +84,7 @@ class SelfSupervisedModel(SupervisedModel):
 
         loss = losses.maximum_manifold_capacity(projections, gamma=0)
 
-        self.log('Train|Loss', loss, on_epoch=True, prog_bar=True)
+        self.log('Train|Loss', loss, on_step=False, on_epoch=True, prog_bar=True)
 
         return loss
 
