@@ -40,7 +40,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--max-epochs', type=int, default=500)
     parser.add_argument('--learning-rate', type=int, default=1e-3)
     parser.add_argument('--projection-dim', type=int, default=128)
-    parser.add_argument('--num-neighbours', type=int, default=20)
+    parser.add_argument('--num-neighbours', type=int, default=200)
     parser.add_argument('--dev', action='store_true')
 
     return parser.parse_args()
