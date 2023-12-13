@@ -29,7 +29,7 @@ AUGMENTATION = transforms.Compose([
 class MultiviewDataset(CIFAR10):
 
     def __init__(self, root: str, train: bool = True, transform: Callable = None, num_views: int = 1) -> None:
-        super().__init__(root, train, transform)
+        super().__init__(root, train, transform, download=True)
         assert num_views >= 1, 'Number of views must be larger than zero'
         self.num_views = num_views
 
@@ -56,8 +56,8 @@ class CIFAR10DataModule(lightning.LightningDataModule):
         self.num_workers = os.cpu_count() - 2
 
         self.train_dataset = MultiviewDataset(root, transform=AUGMENTATION, train=True, num_views=num_views)
-        self.valid_source_dataset = CIFAR10(root, transform=BASIC, train=True)
-        self.valid_target_dataset = CIFAR10(root, transform=BASIC, train=False)
+        self.valid_source_dataset = CIFAR10(root, transform=BASIC, download=True, train=True)
+        self.valid_target_dataset = CIFAR10(root, transform=BASIC, download=True, train=False)
 
         if dev:
             train_size = len(self.train_dataset) // 10
