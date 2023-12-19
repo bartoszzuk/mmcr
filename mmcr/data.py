@@ -4,10 +4,12 @@ from typing import Callable
 import torch
 import torchvision.transforms.v2 as transforms
 from PIL import Image
+from lightning import LightningDataModule
 from torch import Tensor
-import lightning
 from torch.utils.data import DataLoader, Subset
 from torchvision.datasets import CIFAR10
+
+from mmcr.config import FinetuneConfig, PretrainConfig
 
 BASIC = transforms.Compose([
     transforms.ToImage(),
@@ -46,20 +48,22 @@ class MultiviewDataset(CIFAR10):
         return views
 
 
-class CIFAR10DataModule(lightning.LightningDataModule):
+class PretrainDataModule(LightningDataModule):
 
-    def __init__(self, root: str, num_views: int, batch_size: int, dev: bool = False) -> None:
+    def __init__(self, config: PretrainConfig) -> None:
         super().__init__()
 
-        self.train_batch_size = batch_size // num_views
-        self.valid_batch_size = batch_size
-        self.num_workers = os.cpu_count() - 2
+        self.train_batch_size = config.batch_size // config.num_views
+        self.valid_batch_size = config.batch_size
+        self.num_workers = config.num_workers
 
-        self.train_dataset = MultiviewDataset(root, transform=AUGMENTATION, train=True, num_views=num_views)
+        root = config.dataset
+
+        self.train_dataset = MultiviewDataset(root, transform=AUGMENTATION, train=True, num_views=config.num_views)
         self.valid_source_dataset = CIFAR10(root, transform=BASIC, download=True, train=True)
         self.valid_target_dataset = CIFAR10(root, transform=BASIC, download=True, train=False)
 
-        if dev:
+        if config.dev:
             train_size = len(self.train_dataset) // 10
             valid_size = len(self.valid_target_dataset) // 10
 
@@ -74,7 +78,30 @@ class CIFAR10DataModule(lightning.LightningDataModule):
 
     def val_dataloader(self) -> list[DataLoader]:
         return [
-            DataLoader(self.valid_source_dataset, self.valid_batch_size, num_workers=self.num_workers),
-            DataLoader(self.valid_target_dataset, self.valid_batch_size, num_workers=self.num_workers)
+            DataLoader(self.valid_source_dataset, batch_size=self.valid_batch_size, num_workers=self.num_workers),
+            DataLoader(self.valid_target_dataset, batch_size=self.valid_batch_size, num_workers=self.num_workers)
         ]
 
+    def predict_dataloader(self) -> list[DataLoader]:
+        return self.val_dataloader()
+
+
+class FinetuneDataModule(LightningDataModule):
+
+    def __init__(self, config: FinetuneConfig) -> None:
+        super().__init__()
+
+        self.batch_size = config.batch_size
+        self.num_workers = config.num_workers
+
+        self.train_dataset = CIFAR10(config.dataset, download=True, train=True, transform=AUGMENTATION)
+        self.valid_dataset = CIFAR10(config.dataset, download=True, train=False, transform=BASIC)
+
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(self.train_dataset, self.batch_size, num_workers=self.num_workers, shuffle=True)
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(self.valid_dataset, self.batch_size, num_workers=self.num_workers)
+
+    def predict_dataloader(self) -> DataLoader:
+        return self.val_dataloader()
