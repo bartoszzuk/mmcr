@@ -7,11 +7,11 @@ from lightning import Trainer
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 
-from mmcr import models
 from mmcr.config import FinetuneConfig
 from mmcr.data import FinetuneDataModule
+from mmcr.models import ResNetForClassification
 from mmcr.modules import FinetuneModule
-from pretrain import silence_deprecation_warnings
+from pretrain import silence_compilation_warnings
 
 torch.set_float32_matmul_precision('medium')
 
@@ -23,22 +23,24 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--batch-size', type=int, default=512)
     parser.add_argument('--num-workers', type=int, default=os.cpu_count() - 2)
     parser.add_argument('--max-epochs', type=int, default=50)
-    parser.add_argument('--learning-rate', type=int, default=1e-2)
+    parser.add_argument('--learning-rate', type=float, default=1e-2)
     parser.add_argument('--warmup-duration', type=float, default=0)
+    parser.add_argument('--compile', action='store_true')
 
     return parser.parse_args()
 
 
 def finetune() -> None:
-    silence_deprecation_warnings()
-
     config = FinetuneConfig.from_command_line(parse_arguments())
     data = FinetuneDataModule(config)
 
-    model = models.ResNetForClassification.from_pretrained(config.checkpoint)
+    model = ResNetForClassification.from_pretrained(config.checkpoint)
     model.freeze_backbone()
 
-    model = torch.compile(model)
+    if config.compile:
+        model = torch.compile(model)
+        silence_compilation_warnings()
+
     model = FinetuneModule(model, config)
 
     callbacks = [
@@ -57,7 +59,7 @@ def finetune() -> None:
         accelerator='gpu',
         devices=1,
         precision='16-mixed',
-        max_epochs=args.max_epochs,
+        max_epochs=config.max_epochs,
         logger=TensorBoardLogger(save_dir='logs', name=''),
         callbacks=callbacks,
         deterministic=True

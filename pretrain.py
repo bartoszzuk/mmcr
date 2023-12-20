@@ -8,9 +8,9 @@ from lightning import Trainer
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 
-from mmcr.data import PretrainDataModule
 from mmcr.config import PretrainConfig
-from mmcr import models
+from mmcr.data import PretrainDataModule
+from mmcr.models import KNearestNeighbours, ResNet
 from mmcr.modules import PretrainModule
 
 torch.set_float32_matmul_precision('medium')
@@ -23,30 +23,32 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--num-views', type=int, default=16)
     parser.add_argument('--max-epochs', type=int, default=500)
     parser.add_argument('--num-workers', type=int, default=os.cpu_count() - 2)
-    parser.add_argument('--learning-rate', type=int, default=1e-3)
+    parser.add_argument('--learning-rate', type=float, default=1e-3)
     parser.add_argument('--projection-dim', type=int, default=128)
     parser.add_argument('--num-neighbours', type=int, default=200)
     parser.add_argument('--warmup-duration', type=float, default=0.1)
     parser.add_argument('--dev', action='store_true')
+    parser.add_argument('--compile', action='store_true')
 
     return parser.parse_args()
 
 
-def silence_deprecation_warnings() -> None:
+def silence_compilation_warnings() -> None:
     for line in [110, 111, 117, 118]:
         warnings.filterwarnings('ignore', category=UserWarning, module='torch.overrides', lineno=line)
 
 
 def pretrain():
-    silence_deprecation_warnings()
-
     config = PretrainConfig.from_command_line(parse_arguments())
     data = PretrainDataModule(config)
 
-    knn = models.KNearestNeighbours(config.num_neighbours)
+    knn = KNearestNeighbours(config.num_neighbours)
+    model = ResNet(config.projection_dim)
 
-    model = models.ResNet(config.projection_dim)
-    model = torch.compile(model)
+    if config.compile:
+        model = torch.compile(model)
+        silence_compilation_warnings()
+
     model = PretrainModule(model, knn, config)
 
     callbacks = [
