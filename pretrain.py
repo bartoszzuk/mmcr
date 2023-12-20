@@ -4,7 +4,7 @@ import warnings
 from pathlib import Path
 
 import torch
-from lightning import Trainer
+from lightning import Trainer, seed_everything
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 
@@ -40,6 +40,8 @@ def silence_compilation_warnings() -> None:
 
 
 def pretrain():
+    seed_everything(42)
+
     config = PretrainConfig.from_command_line(parse_arguments())
     data = PretrainDataModule(config)
 
