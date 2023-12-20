@@ -53,8 +53,8 @@ class PretrainDataModule(LightningDataModule):
     def __init__(self, config: PretrainConfig) -> None:
         super().__init__()
 
-        self.train_batch_size = config.batch_size // config.num_views
-        self.valid_batch_size = config.batch_size
+        self.train_batch_size = config.batch_size
+        self.valid_batch_size = config.batch_size * config.num_views
         self.num_workers = config.num_workers
 
         root = config.dataset

@@ -1,13 +1,14 @@
 import argparse
 import os
 from pathlib import Path
+from typing import get_args
 
 import torch
 from lightning import Trainer
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 
-from mmcr.config import FinetuneConfig
+from mmcr.config import FinetuneConfig, FinetuneType
 from mmcr.data import FinetuneDataModule
 from mmcr.models import ResNetForClassification
 from mmcr.modules import FinetuneModule
@@ -26,6 +27,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--learning-rate', type=float, default=1e-2)
     parser.add_argument('--warmup-duration', type=float, default=0)
     parser.add_argument('--compile', action='store_true')
+    parser.add_argument('--finetune-type', choices=get_args(FinetuneType), default='linear')
 
     return parser.parse_args()
 
@@ -35,7 +37,9 @@ def finetune() -> None:
     data = FinetuneDataModule(config)
 
     model = ResNetForClassification.from_pretrained(config.checkpoint)
-    model.freeze_backbone()
+
+    if config.finetune_type == 'linear':
+        model.freeze_backbone()
 
     if config.compile:
         model = torch.compile(model)

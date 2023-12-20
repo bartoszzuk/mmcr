@@ -19,13 +19,14 @@ torch.set_float32_matmul_precision('medium')
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=Path, default='cifar10')
-    parser.add_argument('--batch-size', type=int, default=1024)
+    parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--num-views', type=int, default=16)
     parser.add_argument('--max-epochs', type=int, default=500)
     parser.add_argument('--num-workers', type=int, default=os.cpu_count() - 2)
     parser.add_argument('--learning-rate', type=float, default=1e-3)
     parser.add_argument('--projection-dim', type=int, default=128)
     parser.add_argument('--num-neighbours', type=int, default=200)
+    parser.add_argument('--temperature', type=float, default=0.5)
     parser.add_argument('--warmup-duration', type=float, default=0.1)
     parser.add_argument('--dev', action='store_true')
     parser.add_argument('--compile', action='store_true')
@@ -42,7 +43,7 @@ def pretrain():
     config = PretrainConfig.from_command_line(parse_arguments())
     data = PretrainDataModule(config)
 
-    knn = KNearestNeighbours(config.num_neighbours)
+    knn = KNearestNeighbours(config.num_neighbours, config.temperature)
     model = ResNet(config.projection_dim)
 
     if config.compile:

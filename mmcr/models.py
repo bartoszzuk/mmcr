@@ -45,9 +45,8 @@ class ResNetForClassification(nn.Module):
 
     @classmethod
     def from_pretrained(cls, checkpoint: str, num_classes: int = 10) -> Self:
-        checkpoint = torch.load(checkpoint)['state_dict']
+        checkpoint = torch.load(checkpoint)
         checkpoint = {name: parameter for name, parameter in checkpoint.items() if 'backbone' in name}
-        checkpoint = {name.removeprefix('model.'): parameter for name, parameter in checkpoint.items()}
 
         model = cls(num_classes)
 
