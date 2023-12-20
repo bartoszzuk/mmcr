@@ -1,3 +1,4 @@
 cifar10
 venv
 .idea
+*.ipynb
