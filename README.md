@@ -88,7 +88,7 @@ conduct a proper hyperparameter optimization, just used the values that felt goo
 | Stage            | Model    | Dataset | Top1 Accuracy | Top5 Accuracy |
 |------------------|----------|---------|---------------|---------------|
 | Pretrain         | ResNet18 | Cifar10 | 86.32         | 99.39         |
-| Finetune (Our)   | ResNet18 | Cifar10 | 89.17         | 99.62         |
+| Finetune (Our)   | ResNet18 | Cifar10 | 89.19         | 99.61         |
 | Finetune (Paper) | ResNet50 | Cifar10 | 93.53         | -             |
 
 The results from the paper are shown just for reference. Since we are using smaller
