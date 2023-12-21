@@ -25,7 +25,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--num-workers', type=int, default=os.cpu_count() - 2)
     parser.add_argument('--max-epochs', type=int, default=50)
     parser.add_argument('--learning-rate', type=float, default=1e-2)
-    parser.add_argument('--warmup-duration', type=float, default=0)
+    parser.add_argument('--warmup-duration', type=float, default=0.1)
     parser.add_argument('--compile', action='store_true')
     parser.add_argument('--finetune-type', choices=get_args(FinetuneType), default='linear')
 
