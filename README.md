@@ -50,19 +50,18 @@ Some details worth noting:
 - We use cosine scheduler with warmup instead of keeping the learning rate constant like in the original paper.
 - We use `GaussianBlur` and `RandomSolarize` as additional augmentation methods.
 
-## Finetuning
+## Linear Evaluation
 
-Just use a `finetune.py` script as shown below.
+Just use a `evaluate.py` script as shown below. It will train a single linear layer on top of the frozen pretrained encoder.
 
 ```
-python pretrain.py \
+python evaluate.py \
     --checkpoint [YOUR_PRETRAINED_MODEL_CHECKPOINT]
     --dataset cifar10       # path to the dataset root
     --batch-size 1024       # number of images per step
     --max-epochs 50         # number of training epochs
     --learning-rate 0.01    # learning rate for Adam optimizer
     --warmup-duration 0.1   # warmup duration for cosine scheduler
-    --finetune-type linear  # determines which parts to unfreeze, choose from [backbone+linear, linear]
 ```
 
 Some details worth noting:
@@ -72,24 +71,24 @@ Some details worth noting:
 
 ## Experiments
 
-I ran both the `pretrain.py` and `finetune.py` script using the values shown in the examples above. I did **not**
+I ran both the `pretrain.py` and `evaluate.py` script using the values shown in the examples above. I did **not**
 conduct a proper hyperparameter optimization, just used the values that felt good :grimacing:.
 
 ### Pretrain Graphs
 
 ![pretrain-metrics](figures/pretrain.png)
 
-### Finetune Graphs
+### Linear Evaluate Graphs
 
-![finetune-metrics](figures/finetune.png)
+![evaluate-metrics](figures/evaluate.png)
 
 ### Metrics
 
-| Stage            | Model    | Dataset | Top1 Accuracy | Top5 Accuracy |
-|------------------|----------|---------|---------------|---------------|
-| Pretrain         | ResNet18 | Cifar10 | 86.32         | 99.39         |
-| Finetune (Our)   | ResNet18 | Cifar10 | 89.19         | 99.61         |
-| Finetune (Paper) | ResNet50 | Cifar10 | 93.53         | -             |
+| Stage                   | Model    | Dataset | Top1 Accuracy | Top5 Accuracy |
+|-------------------------|----------|---------|---------------|---------------|
+| Pretrain                | ResNet18 | Cifar10 | 86.32         | 99.39         |
+| Linear Evaluate (Our)   | ResNet18 | Cifar10 | 89.19         | 99.61         |
+| Linear Evaluate (Paper) | ResNet50 | Cifar10 | 93.53         | -             |
 
 The results from the paper are shown just for reference. Since we are using smaller
 model and different hyperparameters they are not very comparable.

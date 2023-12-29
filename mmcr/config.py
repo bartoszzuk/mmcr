@@ -27,11 +27,8 @@ class PretrainConfig:
         return cls(**vars(arguments))
 
 
-FinetuneType = Literal['backbone+linear', 'linear']
-
-
 @dataclass(frozen=True)
-class FinetuneConfig:
+class LinearEvaluateConfig:
     checkpoint: Path | str
     dataset: Path | str = 'cifar10'
     batch_size: int = 512
@@ -40,7 +37,6 @@ class FinetuneConfig:
     warmup_duration: float = 0
     learning_rate: float = 1e-3
     compile: bool = False
-    finetune_type: FinetuneType = 'linear'
 
     @classmethod
     def from_command_line(cls, arguments: argparse.Namespace) -> Self:

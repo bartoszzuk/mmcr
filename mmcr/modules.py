@@ -7,7 +7,7 @@ from torch import nn, Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 
-from mmcr.config import FinetuneConfig, PretrainConfig
+from mmcr.config import LinearEvaluateConfig, PretrainConfig
 from mmcr import utils
 from mmcr.models import KNearestNeighbours
 
@@ -36,6 +36,7 @@ class PretrainModule(LightningModule):
         self.max_epochs = config.max_epochs
         self.warmup_epochs = round(config.max_epochs * config.warmup_duration)
         self.learning_rate = config.learning_rate
+        self.num_views = config.num_views
 
         self.top1_accuracy_valid = torchmetrics.Accuracy(num_classes=10, task='multiclass', top_k=1)
         self.top5_accuracy_valid = torchmetrics.Accuracy(num_classes=10, task='multiclass', top_k=5)
@@ -78,9 +79,9 @@ class PretrainModule(LightningModule):
         self.knn.reset()
 
 
-class FinetuneModule(LightningModule):
+class LinearEvaluateModule(LightningModule):
 
-    def __init__(self, model: nn.Module | Callable, config: FinetuneConfig) -> None:
+    def __init__(self, model: nn.Module | Callable, config: LinearEvaluateConfig) -> None:
         super().__init__()
         self.model = model
 

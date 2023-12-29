@@ -9,7 +9,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Subset
 from torchvision.datasets import CIFAR10
 
-from mmcr.config import FinetuneConfig, PretrainConfig
+from mmcr.config import LinearEvaluateConfig, PretrainConfig
 
 BASIC = transforms.Compose([
     transforms.ToImage(),
@@ -86,9 +86,9 @@ class PretrainDataModule(LightningDataModule):
         return self.val_dataloader()
 
 
-class FinetuneDataModule(LightningDataModule):
+class LinearEvaluateDataModule(LightningDataModule):
 
-    def __init__(self, config: FinetuneConfig) -> None:
+    def __init__(self, config: LinearEvaluateConfig) -> None:
         super().__init__()
 
         self.batch_size = config.batch_size
