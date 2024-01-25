@@ -70,9 +70,10 @@ class ResNetForClassification(nn.Module):
 
 class KNearestNeighbours:
 
-    def __init__(self, num_neighbours: int = 200, temperature: float = 0.5):
+    def __init__(self, num_neighbours: int = 200, temperature: float = 0.5, num_labels: int = 10):
         self.num_neighbours = num_neighbours
         self.temperature = temperature
+        self.num_labels = num_labels
 
         self.train_embeddings = []
         self.train_labels = []
@@ -94,7 +95,7 @@ class KNearestNeighbours:
 
         labels = torch.concat(self.train_labels).expand(embeddings.size(0), -1)
         labels = torch.gather(labels, dim=-1, index=indices)
-        labels = torch.nn.functional.one_hot(labels)
+        labels = torch.nn.functional.one_hot(labels, num_classes=self.num_labels)
 
         scores = torch.sum(labels * weights.unsqueeze(-1), dim=1)
 
